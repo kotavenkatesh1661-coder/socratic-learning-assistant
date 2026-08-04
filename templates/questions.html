@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Socratic Learning Journey</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+        body {
+            background: #f3f6fc;
+        }
+
+        .journey-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 50px 24px;
+        }
+
+        .journey-header {
+            margin-bottom: 36px;
+        }
+
+        .journey-header h1 {
+            margin-bottom: 10px;
+        }
+
+        .progress-message {
+            color: #5d6880;
+            line-height: 1.6;
+        }
+
+        .score-guide {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(150px, 1fr)
+            );
+            gap: 12px;
+            margin: 24px 0 34px;
+        }
+
+        .score-guide-item {
+            padding: 14px;
+            background: white;
+            border: 1px solid #dce4f0;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .score-guide-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #315efb;
+            font-size: 20px;
+        }
+
+        .concept-section {
+            margin-bottom: 32px;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #dae2ef;
+            border-radius: 18px;
+            box-shadow:
+                0 12px 35px rgba(30, 50, 90, 0.08);
+        }
+
+        .concept-heading {
+            padding: 24px;
+            background:
+                linear-gradient(135deg, #192b65, #315efb);
+            color: white;
+        }
+
+        .concept-heading h2 {
+            margin: 0 0 8px;
+        }
+
+        .concept-heading p {
+            margin: 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .question-list {
+            padding: 22px;
+        }
+
+        .question-card {
+            margin-bottom: 18px;
+            padding: 22px;
+            border: 1px solid #e0e6f0;
+            border-radius: 14px;
+            background: #fbfcff;
+        }
+
+        .question-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .stage-badge {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 11px;
+            border-radius: 20px;
+            background: #e9efff;
+            color: #3153bf;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .question-text {
+            margin: 0 0 16px;
+            font-size: 18px;
+            line-height: 1.55;
+        }
+
+        .answer-area {
+            width: 100%;
+            min-height: 110px;
+            box-sizing: border-box;
+            padding: 14px;
+            border: 1px solid #ccd5e3;
+            border-radius: 10px;
+            resize: vertical;
+            font: inherit;
+        }
+
+        .answer-area:focus {
+            outline: 2px solid #9eb3ff;
+            border-color: #315efb;
+        }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 13px;
+        }
+
+        .reveal-button {
+            padding: 9px 14px;
+            border: none;
+            border-radius: 8px;
+            background: #315efb;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .answer-button {
+            background: #192b65;
+        }
+
+        .reveal-box {
+            display: none;
+            margin-top: 13px;
+            padding: 14px;
+            border-radius: 9px;
+            background: #eef3ff;
+            color: #26344f;
+            line-height: 1.55;
+        }
+
+        .sample-answer {
+            background: #edf9f1;
+            border-left: 4px solid #39a267;
+        }
+
+        .submission-panel {
+            margin-top: 32px;
+            padding: 30px;
+            border-radius: 18px;
+            background: white;
+            border: 1px solid #dce4f0;
+            text-align: center;
+        }
+
+        .submission-panel h2 {
+            margin-top: 0;
+        }
+
+        .submission-panel p {
+            max-width: 650px;
+            margin: 0 auto 20px;
+            color: #5d6880;
+            line-height: 1.6;
+        }
+
+        .evaluate-button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            background: #315efb;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .evaluate-button:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
+
+        .answer-progress {
+            margin-top: 14px;
+            color: #5d6880;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-icon">S</span>
+
+        <span>
+            Socratic Learning Assistant
+        </span>
+    </a>
+
+    <nav>
+        <a href="{{ url_for('index') }}">
+            New Material
+        </a>
+    </nav>
+
+</header>
+
+<main class="journey-container">
+
+    <section class="journey-header">
+
+        <p class="eyebrow">
+            Interactive learning mode
+        </p>
+
+        <h1>
+            Your Socratic learning journey
+        </h1>
+
+        <p class="progress-message">
+            Answer each question using your own reasoning.
+            When finished, submit your responses for personalized scoring.
+        </p>
+
+    </section>
+
+    <section class="score-guide">
+
+        <div class="score-guide-item">
+            <strong>0</strong>
+            No response
+        </div>
+
+        <div class="score-guide-item">
+            <strong>1</strong>
+            Minimal understanding
+        </div>
+
+        <div class="score-guide-item">
+            <strong>2</strong>
+            Partial understanding
+        </div>
+
+        <div class="score-guide-item">
+            <strong>3</strong>
+            Good understanding
+        </div>
+
+        <div class="score-guide-item">
+            <strong>4</strong>
+            Strong understanding
+        </div>
+
+    </section>
+
+    <form
+        id="learning-form"
+        method="POST"
+        action="{{ url_for('evaluate_answers') }}"
+    >
+
+        <input
+            type="hidden"
+            name="session_filename"
+            value="{{ session_filename }}"
+        >
+
+        {% for concept_data in learning_journey %}
+
+            {% set concept_loop = loop %}
+
+            <section class="concept-section">
+
+                <header class="concept-heading">
+
+                    <h2>
+                        {{ concept_loop.index }}.
+                        {{ concept_data["concept"] }}
+                    </h2>
+
+                    <p>
+                        {{ concept_data["description"] }}
+                    </p>
+
+                </header>
+
+                <div class="question-list">
+
+                    {% for item in concept_data["questions"] %}
+
+                        {% set question_id =
+                            "concept-" ~ concept_loop.index0
+                            ~ "-question-" ~ loop.index0
+                        %}
+
+                        <article class="question-card">
+
+                            <span class="stage-badge">
+                                {{ item["stage"] }}
+                            </span>
+
+                            <p class="question-text">
+                                {{ item["question"] }}
+                            </p>
+
+                            <textarea
+                                class="answer-area"
+                                name="student_answers"
+                                placeholder="Write your reasoning here..."
+                                oninput="updateProgress()"
+                            ></textarea>
+
+                            <div class="action-row">
+
+                                <button
+                                    class="reveal-button"
+                                    type="button"
+                                    onclick="toggleBox(
+                                        '{{ question_id }}-hint'
+                                    )"
+                                >
+                                    Reveal Hint
+                                </button>
+
+                                <button
+                                    class="reveal-button answer-button"
+                                    type="button"
+                                    onclick="toggleBox(
+                                        '{{ question_id }}-answer'
+                                    )"
+                                >
+                                    Compare Sample Reasoning
+                                </button>
+
+                            </div>
+
+                            <div
+                                class="reveal-box"
+                                id="{{ question_id }}-hint"
+                            >
+                                <strong>Hint:</strong>
+                                {{ item["hint"] }}
+                            </div>
+
+                            <div
+                                class="reveal-box sample-answer"
+                                id="{{ question_id }}-answer"
+                            >
+                                <strong>Sample reasoning:</strong>
+                                {{ item["sample_answer"] }}
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endfor %}
+
+        <section class="submission-panel">
+
+            <h2>
+                Ready for your learning score?
+            </h2>
+
+            <p>
+                The Socratic Learning Assistant will evaluate your
+                reasoning, identify strengths, and recommend areas
+                for improvement.
+            </p>
+
+            <button
+                id="evaluate-button"
+                class="evaluate-button"
+                type="submit"
+            >
+                Evaluate My Understanding
+            </button>
+
+            <div
+                id="answer-progress"
+                class="answer-progress"
+            >
+                0 questions answered
+            </div>
+
+        </section>
+
+    </form>
+
+</main>
+
+<footer>
+    <p>Socratic Learning Assistant</p>
+</footer>
+
+<script>
+    function toggleBox(elementId) {
+        const element = document.getElementById(elementId);
+
+        if (!element) {
+            return;
+        }
+
+        element.style.display =
+            element.style.display === "block"
+                ? "none"
+                : "block";
+    }
+
+    function updateProgress() {
+        const answers = document.querySelectorAll(
+            ".answer-area"
+        );
+
+        let completed = 0;
+
+        answers.forEach((answer) => {
+            if (answer.value.trim().length > 0) {
+                completed += 1;
+            }
+        });
+
+        document.getElementById(
+            "answer-progress"
+        ).textContent =
+            completed +
+            " of " +
+            answers.length +
+            " questions answered";
+    }
+
+    document.getElementById(
+        "learning-form"
+    ).addEventListener("submit", function () {
+        const button = document.getElementById(
+            "evaluate-button"
+        );
+
+        button.disabled = true;
+        button.textContent =
+            "Evaluating your understanding...";
+    });
+
+    updateProgress();
+</script>
+
+</body>
+</html>

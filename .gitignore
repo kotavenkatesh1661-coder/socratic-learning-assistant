@@ -1,0 +1,28 @@
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code
+.vscode/
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+
+# Temporary application data
+uploads/*
+extracted/*
+sessions/*
+
+# Keep folders in Git
+!uploads/.gitkeep
+!extracted/.gitkeep
+!sessions/.gitkeep

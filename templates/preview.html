@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Material Preview</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <a class="brand" href="{{ url_for('index') }}">
+            <span class="brand-icon">S</span>
+
+            <span>
+                Socratic Learning Assistant
+            </span>
+        </a>
+
+        <nav>
+            <a href="{{ url_for('index') }}">
+                New Material
+            </a>
+        </nav>
+
+    </header>
+
+    <main class="page-container">
+
+        <section class="preview-header">
+
+            <p class="eyebrow">
+                Material received
+            </p>
+
+            <h1>
+                Review your learning material
+            </h1>
+
+            <p>
+                Confirm that the extracted material is correct before
+                continuing to concept extraction.
+            </p>
+
+        </section>
+
+        <section class="preview-layout">
+
+            <aside class="details-card">
+
+                <h2>
+                    Session Details
+                </h2>
+
+                <div class="detail-row">
+                    <span>Source</span>
+                    <strong>{{ source_name }}</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>File Type</span>
+                    <strong>{{ file_type }}</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Word Count</span>
+                    <strong>{{ word_count }}</strong>
+                </div>
+
+                <div class="detail-row">
+                    <span>Character Count</span>
+                    <strong>{{ character_count }}</strong>
+                </div>
+
+            </aside>
+
+            <section class="preview-card">
+
+                <h2>
+                    Content Preview
+                </h2>
+
+                <div class="text-preview">
+                    {{ material }}
+                </div>
+
+                <div class="button-row">
+
+                    <a
+                        class="secondary-button"
+                        href="{{ url_for('index') }}"
+                    >
+                        Go Back
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('extract_material_concepts') }}"
+                    >
+                        <input
+                            type="hidden"
+                            name="extracted_filename"
+                            value="{{ extracted_filename }}"
+                        >
+
+                        <button
+                            class="primary-button"
+                            type="submit"
+                        >
+                            Extract Concepts
+                        </button>
+                    </form>
+
+                </div>
+
+                <p class="coming-next">
+                    The Socratic Learning Assistant will identify the important
+                    concepts in your learning material.
+                </p>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p>
+            Socratic Learning Assistant
+        </p>
+    </footer>
+
+</body>
+</html>

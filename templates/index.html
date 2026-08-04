@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Socratic Learning Assistant</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a
+        class="brand"
+        href="{{ url_for('index') }}"
+    >
+        <span class="brand-icon">S</span>
+
+        <span class="brand-text">
+            Socratic Learning Assistant
+        </span>
+    </a>
+
+    <nav class="nav-links">
+        <a href="#how-it-works">
+            How It Works
+        </a>
+
+        <a
+            class="nav-button"
+            href="{{ url_for('index') }}"
+        >
+            New Session
+        </a>
+    </nav>
+
+</header>
+
+<main class="home-page">
+
+    <section class="hero-section">
+
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                Intelligent Guided Learning
+            </span>
+
+            <h1>
+                Learn Through Questions,
+                <span>Not Just Answers</span>
+            </h1>
+
+            <p class="hero-description">
+                Upload your learning material or paste your notes.
+                The Socratic Learning Assistant identifies important
+                concepts and guides you through thoughtful questions,
+                hints, feedback, and personalized scoring.
+            </p>
+
+            <div class="hero-features">
+
+                <div class="feature-pill">
+                    <span>✓</span>
+                    Concept extraction
+                </div>
+
+                <div class="feature-pill">
+                    <span>✓</span>
+                    Guided questions
+                </div>
+
+                <div class="feature-pill">
+                    <span>✓</span>
+                    Personalized feedback
+                </div>
+
+            </div>
+
+        </div>
+
+        <section class="upload-card">
+
+            <div class="card-header">
+
+                <div class="card-icon">
+                    ✦
+                </div>
+
+                <div>
+                    <p class="eyebrow">
+                        Start Learning
+                    </p>
+
+                    <h2>
+                        Add Your Material
+                    </h2>
+                </div>
+
+            </div>
+
+            {% with messages =
+                get_flashed_messages(
+                    with_categories=true
+                )
+            %}
+
+                {% if messages %}
+
+                    <div class="flash-container">
+
+                        {% for category, message in messages %}
+
+                            <div
+                                class="flash-message
+                                {% if category == 'error' %}
+                                    flash-error
+                                {% else %}
+                                    flash-success
+                                {% endif %}
+                                "
+                            >
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+            <form
+                class="material-form"
+                method="POST"
+                action="{{ url_for('analyze') }}"
+                enctype="multipart/form-data"
+            >
+
+                <div class="form-group">
+
+                    <label for="material_text">
+                        Paste your notes
+                    </label>
+
+                    <textarea
+                        id="material_text"
+                        name="material_text"
+                        placeholder="Paste lecture notes, textbook content, study material, or any topic you want to understand..."
+                    ></textarea>
+
+                    <span class="field-help">
+                        Paste plain text directly into this box.
+                    </span>
+
+                </div>
+
+                <div class="divider">
+
+                    <span>
+                        OR
+                    </span>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>
+                        Upload a document
+                    </label>
+
+                    <label
+                        class="file-upload"
+                        for="material_file"
+                    >
+
+                        <span class="upload-icon">
+                            ↑
+                        </span>
+
+                        <span class="upload-text">
+
+                            <strong>
+                                Choose a document
+                            </strong>
+
+                            <small id="file-name">
+                                PDF, DOCX, PPTX, or TXT up to 16 MB
+                            </small>
+
+                        </span>
+
+                        <span class="browse-button">
+                            Browse
+                        </span>
+
+                    </label>
+
+                    <input
+                        id="material_file"
+                        class="hidden-file-input"
+                        type="file"
+                        name="material_file"
+                        accept=".pdf,.docx,.pptx,.txt"
+                    >
+
+                </div>
+
+                <button
+                    class="primary-button"
+                    type="submit"
+                >
+                    <span>
+                        Analyze Learning Material
+                    </span>
+
+                    <span class="button-arrow">
+                        →
+                    </span>
+                </button>
+
+            </form>
+
+            <p class="privacy-message">
+                Your material is used only to create your
+                learning session.
+            </p>
+
+        </section>
+
+    </section>
+
+    <section
+        id="how-it-works"
+        class="process-section"
+    >
+
+        <div class="section-heading">
+
+            <p class="eyebrow">
+                Simple Learning Process
+            </p>
+
+            <h2>
+                How It Works
+            </h2>
+
+            <p>
+                Move from learning material to deeper understanding
+                in four guided steps.
+            </p>
+
+        </div>
+
+        <div class="process-grid">
+
+            <article class="process-card">
+
+                <span class="step-number">
+                    01
+                </span>
+
+                <div class="process-icon">
+                    📄
+                </div>
+
+                <h3>
+                    Add Material
+                </h3>
+
+                <p>
+                    Paste notes or upload a supported document.
+                </p>
+
+            </article>
+
+            <article class="process-card">
+
+                <span class="step-number">
+                    02
+                </span>
+
+                <div class="process-icon">
+                    💡
+                </div>
+
+                <h3>
+                    Discover Concepts
+                </h3>
+
+                <p>
+                    Important topics and explanations are identified.
+                </p>
+
+            </article>
+
+            <article class="process-card">
+
+                <span class="step-number">
+                    03
+                </span>
+
+                <div class="process-icon">
+                    ❓
+                </div>
+
+                <h3>
+                    Answer Questions
+                </h3>
+
+                <p>
+                    Work through progressive Socratic questions.
+                </p>
+
+            </article>
+
+            <article class="process-card">
+
+                <span class="step-number">
+                    04
+                </span>
+
+                <div class="process-icon">
+                    📊
+                </div>
+
+                <h3>
+                    Review Results
+                </h3>
+
+                <p>
+                    Receive scoring, strengths, and improvement advice.
+                </p>
+
+            </article>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="site-footer">
+
+    <p>
+        Socratic Learning Assistant
+    </p>
+
+    <span>
+        Learn by thinking, reasoning, and reflecting.
+    </span>
+
+</footer>
+
+<script>
+    const fileInput =
+        document.getElementById("material_file");
+
+    const fileName =
+        document.getElementById("file-name");
+
+    fileInput.addEventListener(
+        "change",
+        function () {
+            if (
+                this.files &&
+                this.files.length > 0
+            ) {
+                fileName.textContent =
+                    this.files[0].name;
+            } else {
+                fileName.textContent =
+                    "PDF, DOCX, PPTX, or TXT up to 16 MB";
+            }
+        }
+    );
+</script>
+
+</body>
+</html>
