@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Learning Dashboard</title>
+    <title>{{ concept["concept"] }}</title>
 
     <link
         rel="stylesheet"
@@ -19,29 +20,15 @@
             background: #f4f7fc;
         }
 
-        .dashboard-container {
-            max-width: 1150px;
+        .concept-container {
+            max-width: 900px;
             margin: 0 auto;
             padding: 50px 24px;
         }
 
-        .dashboard-header {
-            margin-bottom: 30px;
-        }
-
-        .dashboard-header h1 {
-            margin-bottom: 10px;
-        }
-
-        .dashboard-header p {
-            color: #667085;
-            line-height: 1.6;
-        }
-
-        .summary-card {
-            margin-bottom: 30px;
-            padding: 28px;
-            border-radius: 18px;
+        .concept-hero {
+            padding: 34px;
+            border-radius: 20px;
             background: linear-gradient(
                 135deg,
                 #182b66,
@@ -50,70 +37,72 @@
             color: white;
         }
 
-        .summary-card h2 {
-            margin-top: 0;
+        .concept-hero h1 {
+            margin: 0 0 12px;
+            font-size: 38px;
         }
 
-        .summary-number {
-            font-size: 42px;
-            font-weight: 800;
+        .concept-hero p {
+            margin: 0;
+            line-height: 1.7;
+            opacity: 0.92;
         }
 
-        .concept-grid {
+        .mode-grid {
             display: grid;
             grid-template-columns: repeat(
                 auto-fit,
-                minmax(280px, 1fr)
+                minmax(250px, 1fr)
             );
             gap: 20px;
+            margin-top: 28px;
         }
 
-        .concept-card {
-            display: block;
-            padding: 22px;
+        .mode-card {
+            padding: 24px;
             border: 1px solid #dfe5ef;
             border-radius: 16px;
             background: white;
-            color: inherit;
-            text-decoration: none;
             box-shadow: 0 10px 30px rgba(25, 45, 80, 0.07);
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease;
         }
 
-        .concept-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 35px rgba(25, 45, 80, 0.12);
+        .mode-icon {
+            font-size: 30px;
         }
 
-        .concept-number {
-            display: inline-flex;
-            width: 36px;
-            height: 36px;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 14px;
-            border-radius: 50%;
-            background: #e9efff;
-            color: #315efb;
-            font-weight: 800;
+        .mode-card h2 {
+            margin: 15px 0 10px;
         }
 
-        .concept-card h2 {
-            margin: 0 0 10px;
-            font-size: 20px;
-        }
-
-        .concept-card p {
-            margin: 0 0 18px;
+        .mode-card p {
             color: #5d6880;
             line-height: 1.6;
         }
 
-        .concept-action {
+        .mode-button {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            background: #315efb;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .disabled-button {
+            background: #aeb7c8;
+            cursor: not-allowed;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 26px;
             color: #315efb;
             font-weight: 700;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -130,91 +119,104 @@
         </span>
     </a>
 
-    <nav>
-        <a href="{{ url_for('index') }}">
-            New Material
-        </a>
-    </nav>
-
 </header>
 
-<main class="dashboard-container">
+<main class="concept-container">
 
-    <section class="dashboard-header">
+    <section class="concept-hero">
 
         <p class="eyebrow">
-            Learning Dashboard
+            Concept {{ concept_index + 1 }}
         </p>
 
         <h1>
-            Choose a concept to learn
+            {{ concept["concept"] }}
         </h1>
 
         <p>
-            Select any concept below to study it individually
-            using Socratic questions or multiple-choice practice.
+            {{ concept["description"] }}
         </p>
 
     </section>
 
-    <section class="summary-card">
+    <section class="mode-grid">
 
-        <h2>
-            Concepts Identified
-        </h2>
+        <article class="mode-card">
 
-        <div class="summary-number">
-            {{ concepts|length }}
-        </div>
+            <div class="mode-icon">
+                💬
+            </div>
 
-        <p>
-            Choose any concept and start learning at your own pace.
-        </p>
+            <h2>
+                Socratic Learning
+            </h2>
 
-    </section>
+            <p>
+                Explore this concept through progressive questions,
+                reasoning, hints, and reflection.
+            </p>
 
-    <section class="concept-grid">
-
-        {% for concept in concepts %}
-
-            <a
-                class="concept-card"
-                href="{{ url_for(
-                    'concept_page',
-                    session_filename=session_filename,
-                    concept_index=loop.index0
-                ) }}"
+            <form
+                method="POST"
+                action="{{ url_for('generate_concept_questions') }}"
             >
+                <input
+                    type="hidden"
+                    name="session_filename"
+                    value="{{ session_filename }}"
+                >
 
-                <span class="concept-number">
-                    {{ loop.index }}
-                </span>
+                <input
+                    type="hidden"
+                    name="concept_index"
+                    value="{{ concept_index }}"
+                >
 
-                <h2>
-                    {{ concept["concept"] }}
-                </h2>
+                <button
+                    class="mode-button"
+                    type="submit"
+                >
+                    Start Socratic Mode
+                </button>
+            </form>
 
-                <p>
-                    {{ concept["description"] }}
-                </p>
+        </article>
 
-                <span class="concept-action">
-                    Open Concept →
-                </span>
+        <article class="mode-card">
 
-            </a>
+            <div class="mode-icon">
+                📝
+            </div>
 
-        {% endfor %}
+            <h2>
+                Multiple Choice
+            </h2>
+
+            <p>
+                Test your understanding with interactive
+                multiple-choice questions and explanations.
+            </p>
+
+            <button
+                class="mode-button disabled-button"
+                type="button"
+                disabled
+            >
+                MCQ Coming Next
+            </button>
+
+        </article>
 
     </section>
+
+    <a
+        class="back-link"
+        href="javascript:history.back()"
+    >
+        ← Back to Concepts
+    </a>
 
 </main>
-
-<footer>
-    <p>
-        Socratic Learning Assistant
-    </p>
-</footer>
 
 </body>
 </html>
