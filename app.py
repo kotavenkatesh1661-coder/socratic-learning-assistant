@@ -181,7 +181,38 @@ def analyze():
         )
 
         return redirect(url_for("index"))
+@app.route("/concept/<session_filename>/<int:concept_index>")
+def concept_page(session_filename, concept_index):
+    try:
+        session_path = safe_session_path(session_filename)
 
+        if not session_path.exists():
+            flash("The learning session has expired.", "error")
+            return redirect(url_for("index"))
+
+        session_data = json.loads(
+            session_path.read_text(encoding="utf-8")
+        )
+
+        concepts = session_data.get("concepts", [])
+
+        if concept_index < 0 or concept_index >= len(concepts):
+            flash("Concept not found.", "error")
+            return redirect(url_for("index"))
+
+        concept = concepts[concept_index]
+
+        return render_template(
+            "concept.html",
+            concept=concept,
+            concept_index=concept_index,
+            session_filename=session_filename,
+        )
+
+    except Exception as error:
+        app.logger.exception("Concept page failed")
+        flash(f"Something went wrong: {error}", "error")
+        return redirect(url_for("index"))
 
 @app.route("/extract-concepts", methods=["POST"])
 def extract_material_concepts():
