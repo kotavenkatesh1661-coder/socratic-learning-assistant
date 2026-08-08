@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Important Concepts</title>
+    <title>Learning Dashboard</title>
 
     <link
         rel="stylesheet"
@@ -16,61 +15,32 @@
     >
 
     <style>
-        .concepts-container {
-            max-width: 1100px;
+        body {
+            background: #f4f7fc;
+        }
+
+        .dashboard-container {
+            max-width: 1150px;
             margin: 0 auto;
             padding: 50px 24px;
         }
 
-        .concepts-header {
-            max-width: 720px;
-            margin-bottom: 32px;
+        .dashboard-header {
+            margin-bottom: 30px;
         }
 
-        .concept-grid {
-            display: grid;
-            grid-template-columns: repeat(
-                auto-fit,
-                minmax(280px, 1fr)
-            );
-            gap: 18px;
+        .dashboard-header h1 {
+            margin-bottom: 10px;
         }
 
-        .concept-card {
-            padding: 22px;
-            background: white;
-            border: 1px solid #dfe5ef;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(25, 45, 80, 0.08);
-        }
-
-        .concept-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            margin-bottom: 14px;
-            border-radius: 50%;
-            background: #315efb;
-            color: white;
-            font-weight: 700;
-        }
-
-        .concept-card h2 {
-            margin: 0 0 10px;
-            font-size: 20px;
-        }
-
-        .concept-card p {
-            margin: 0;
-            color: #4d5870;
+        .dashboard-header p {
+            color: #667085;
             line-height: 1.6;
         }
 
-        .journey-box {
-            margin-top: 34px;
-            padding: 30px;
+        .summary-card {
+            margin-bottom: 30px;
+            padding: 28px;
             border-radius: 18px;
             background: linear-gradient(
                 135deg,
@@ -80,37 +50,70 @@
             color: white;
         }
 
-        .journey-box h2 {
-            margin: 0 0 10px;
+        .summary-card h2 {
+            margin-top: 0;
         }
 
-        .journey-box p {
-            max-width: 700px;
-            margin-bottom: 20px;
+        .summary-number {
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(280px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .concept-card {
+            display: block;
+            padding: 22px;
+            border: 1px solid #dfe5ef;
+            border-radius: 16px;
+            background: white;
+            color: inherit;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(25, 45, 80, 0.07);
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 35px rgba(25, 45, 80, 0.12);
+        }
+
+        .concept-number {
+            display: inline-flex;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            border-radius: 50%;
+            background: #e9efff;
+            color: #315efb;
+            font-weight: 800;
+        }
+
+        .concept-card h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+
+        .concept-card p {
+            margin: 0 0 18px;
+            color: #5d6880;
             line-height: 1.6;
         }
 
-        .journey-button {
-            padding: 14px 24px;
-            border: none;
-            border-radius: 10px;
-            background: white;
-            color: #213eaa;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        .journey-button:hover {
-            transform: translateY(-1px);
-        }
-
-        .secondary-link {
-            display: inline-block;
-            margin-top: 24px;
+        .concept-action {
             color: #315efb;
             font-weight: 700;
-            text-decoration: none;
         }
     </style>
 </head>
@@ -135,21 +138,37 @@
 
 </header>
 
-<main class="concepts-container">
+<main class="dashboard-container">
 
-    <section class="concepts-header">
+    <section class="dashboard-header">
 
         <p class="eyebrow">
-            Step 1 complete
+            Learning Dashboard
         </p>
 
         <h1>
-            Important concepts discovered
+            Choose a concept to learn
         </h1>
 
         <p>
-            Review the concepts below, then continue to an
-            interactive Socratic learning journey.
+            Select any concept below to study it individually
+            using Socratic questions or multiple-choice practice.
+        </p>
+
+    </section>
+
+    <section class="summary-card">
+
+        <h2>
+            Concepts Identified
+        </h2>
+
+        <div class="summary-number">
+            {{ concepts|length }}
+        </div>
+
+        <p>
+            Choose any concept and start learning at your own pace.
         </p>
 
     </section>
@@ -158,7 +177,14 @@
 
         {% for concept in concepts %}
 
-            <article class="concept-card">
+            <a
+                class="concept-card"
+                href="{{ url_for(
+                    'concept_page',
+                    session_filename=session_filename,
+                    concept_index=loop.index0
+                ) }}"
+            >
 
                 <span class="concept-number">
                     {{ loop.index }}
@@ -172,49 +198,15 @@
                     {{ concept["description"] }}
                 </p>
 
-            </article>
+                <span class="concept-action">
+                    Open Concept →
+                </span>
+
+            </a>
 
         {% endfor %}
 
     </section>
-
-    <section class="journey-box">
-
-        <h2>
-            Ready to explore these concepts?
-        </h2>
-
-        <p>
-            The assistant will guide you through five stages:
-            Explore, Reason, Challenge, Apply, and Reflect.
-        </p>
-
-        <form
-            method="POST"
-            action="{{ url_for('generate_questions') }}"
-        >
-            <input
-                type="hidden"
-                name="session_filename"
-                value="{{ session_filename }}"
-            >
-
-            <button
-                class="journey-button"
-                type="submit"
-            >
-                Begin Socratic Journey
-            </button>
-        </form>
-
-    </section>
-
-    <a
-        class="secondary-link"
-        href="{{ url_for('index') }}"
-    >
-        Analyze New Material
-    </a>
 
 </main>
 
