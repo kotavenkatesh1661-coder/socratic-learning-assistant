@@ -359,6 +359,84 @@ def generate_questions():
 
         return redirect(url_for("index"))
 
+@app.route("/generate-concept-questions", methods=["POST"])
+def generate_concept_questions():
+    session_filename = request.form.get(
+        "session_filename",
+        "",
+    ).strip()
+
+    concept_index = request.form.get(
+        "concept_index",
+        "",
+    ).strip()
+
+    if not session_filename or concept_index == "":
+        flash("Concept information is missing.", "error")
+        return redirect(url_for("index"))
+
+    try:
+        concept_index = int(concept_index)
+
+        session_path = safe_session_path(
+            session_filename
+        )
+
+        if not session_path.exists():
+            flash(
+                "The learning session has expired.",
+                "error",
+            )
+            return redirect(url_for("index"))
+
+        session_data = json.loads(
+            session_path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        material = session_data.get(
+            "material",
+            "",
+        )
+
+        concepts = session_data.get(
+            "concepts",
+            [],
+        )
+
+        if concept_index < 0 or concept_index >= len(concepts):
+            flash("Concept not found.", "error")
+            return redirect(url_for("index"))
+
+        selected_concept = concepts[
+            concept_index
+        ]
+
+        learning_journey = generate_socratic_questions(
+            material,
+            [selected_concept],
+        )
+
+        return render_template(
+            "questions.html",
+            learning_journey=learning_journey,
+            session_filename=session_filename,
+        )
+
+    except Exception as error:
+        app.logger.exception(
+            "Individual concept question generation failed"
+        )
+
+        flash(
+            f"Something went wrong: {error}",
+            "error",
+        )
+
+        return redirect(url_for("index"))
+
+
 @app.route("/evaluate-answers", methods=["POST"])
 def evaluate_answers():
     session_filename = request.form.get(
