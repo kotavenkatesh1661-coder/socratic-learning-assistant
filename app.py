@@ -285,80 +285,6 @@ def extract_material_concepts():
         return redirect(url_for("index"))
 
 
-@app.route("/generate-questions", methods=["POST"])
-def generate_questions():
-    session_filename = request.form.get(
-        "session_filename",
-        "",
-    ).strip()
-
-    if not session_filename:
-        flash(
-            "The learning session could not be found.",
-            "error",
-        )
-
-        return redirect(url_for("index"))
-
-    try:
-        session_path = safe_session_path(
-            session_filename
-        )
-
-        if not session_path.exists():
-            flash(
-                "The learning session has expired.",
-                "error",
-            )
-
-            return redirect(url_for("index"))
-
-        session_data = json.loads(
-            session_path.read_text(
-                encoding="utf-8"
-            )
-        )
-
-        material = session_data.get("material", "")
-        concepts = session_data.get("concepts", [])
-
-        learning_journey = generate_socratic_questions(
-            material,
-            concepts,
-        )
-
-        session_data["learning_journey"] = (
-            learning_journey
-        )
-
-        session_path.write_text(
-            json.dumps(
-                session_data,
-                indent=2,
-                ensure_ascii=False,
-            ),
-            encoding="utf-8",
-        )
-
-        return render_template(
-            "questions.html",
-            learning_journey=learning_journey,
-            session_filename=session_filename,
-        )
-
-    except Exception as error:
-        app.logger.exception(
-            "Socratic question generation failed"
-        )
-
-        flash(
-            "Something went wrong while generating "
-            f"Socratic questions: {error}",
-            "error",
-        )
-
-        return redirect(url_for("index"))
-
 @app.route("/generate-concept-questions", methods=["POST"])
 def generate_concept_questions():
     session_filename = request.form.get(
@@ -366,30 +292,22 @@ def generate_concept_questions():
         "",
     ).strip()
 
-    concept_index = request.form.get(
+    concept_index_raw = request.form.get(
         "concept_index",
         "",
     ).strip()
 
-    if not session_filename or concept_index == "":
-        flash(
-            "Concept information is missing.",
-            "error",
-        )
+    if not session_filename or concept_index_raw == "":
+        flash("Concept information is missing.", "error")
         return redirect(url_for("index"))
 
     try:
-        concept_index = int(concept_index)
+        concept_index = int(concept_index_raw)
 
-        session_path = safe_session_path(
-            session_filename
-        )
+        session_path = safe_session_path(session_filename)
 
         if not session_path.exists():
-            flash(
-                "The learning session has expired.",
-                "error",
-            )
+            flash("The learning session has expired.", "error")
             return redirect(url_for("index"))
 
         session_data = json.loads(
@@ -412,22 +330,16 @@ def generate_concept_questions():
             concept_index < 0
             or concept_index >= len(concepts)
         ):
-            flash(
-                "Concept not found.",
-                "error",
-            )
+            flash("Concept not found.", "error")
             return redirect(url_for("index"))
 
         selected_concept = concepts[
             concept_index
         ]
 
-        # Generate questions ONLY for selected concept
-        learning_journey = (
-            generate_socratic_questions(
-                material,
-                [selected_concept],
-            )
+        learning_journey = generate_socratic_questions(
+            material,
+            [selected_concept],
         )
 
         if not learning_journey:
@@ -435,6 +347,7 @@ def generate_concept_questions():
                 "No Socratic questions could be generated.",
                 "error",
             )
+
             return redirect(
                 url_for(
                     "concept_page",
@@ -443,9 +356,13 @@ def generate_concept_questions():
                 )
             )
 
-        # VERY IMPORTANT:
-        # Save the generated questions for scoring later.
+        # Save the questions for evaluation.
+        # We store both keys for compatibility.
         session_data["active_learning_journey"] = (
+            learning_journey
+        )
+
+        session_data["learning_journey"] = (
             learning_journey
         )
 
@@ -464,6 +381,17 @@ def generate_concept_questions():
                 ensure_ascii=False,
             ),
             encoding="utf-8",
+        )
+
+        print(
+            "Saved Socratic journey:",
+            len(learning_journey),
+            "concept(s)"
+        )
+
+        print(
+            "Session file:",
+            session_filename
         )
 
         return render_template(
@@ -493,7 +421,9 @@ def evaluate_answers():
         "",
     ).strip()
 
-    student_answers = request.form.getlist("student_answers")
+    student_answers = request.form.getlist(
+        "student_answers"
+    )
 
     if not session_filename:
         flash(
@@ -503,7 +433,9 @@ def evaluate_answers():
         return redirect(url_for("index"))
 
     try:
-        session_path = safe_session_path(session_filename)
+        session_path = safe_session_path(
+            session_filename
+        )
 
         if not session_path.exists():
             flash(
@@ -513,29 +445,78 @@ def evaluate_answers():
             return redirect(url_for("index"))
 
         session_data = json.loads(
-            session_path.read_text(encoding="utf-8")
+            session_path.read_text(
+                encoding="utf-8"
+            )
         )
 
+        # First try the new individual-concept journey.
         learning_journey = session_data.get(
             "active_learning_journey",
             [],
         )
-        
+
+        # Backward compatibility.
+        if not learning_journey:
+            learning_journey = session_data.get(
+                "learning_journey",
+                [],
+            )
+
+        print(
+            "Evaluating session:",
+            session_filename
+        )
+
+        print(
+            "Learning journey count:",
+            len(learning_journey)
+        )
+
+        print(
+            "Student answers count:",
+            len(student_answers)
+        )
 
         if not learning_journey:
             flash(
-                "No Socratic questions were found.",
+                "No Socratic questions were found for this concept.",
                 "error",
             )
             return redirect(url_for("index"))
+
+        expected_answer_count = sum(
+            len(
+                concept_data.get(
+                    "questions",
+                    [],
+                )
+            )
+            for concept_data in learning_journey
+        )
+
+        while len(student_answers) < expected_answer_count:
+            student_answers.append("")
+
+        student_answers = [
+            answer.strip()
+            for answer in student_answers[
+                :expected_answer_count
+            ]
+        ]
 
         evaluation_result = evaluate_socratic_answers(
             learning_journey,
             student_answers,
         )
 
-        session_data["student_answers"] = student_answers
-        session_data["evaluation_result"] = evaluation_result
+        session_data["student_answers"] = (
+            student_answers
+        )
+
+        session_data["evaluation_result"] = (
+            evaluation_result
+        )
 
         session_path.write_text(
             json.dumps(
@@ -549,19 +530,26 @@ def evaluate_answers():
         return render_template(
             "results.html",
             result=evaluation_result,
+            session_filename=session_filename,
+            concept_index=session_data.get(
+                "active_concept_index"
+            ),
+            concept=session_data.get(
+                "active_concept"
+            ),
         )
 
     except Exception as error:
-        app.logger.exception("Answer evaluation failed")
+        app.logger.exception(
+            "Answer evaluation failed"
+        )
 
         flash(
-            "Something went wrong while evaluating your "
-            f"answers: {error}",
+            f"Something went wrong while evaluating your answers: {error}",
             "error",
         )
 
         return redirect(url_for("index"))
-
 @app.errorhandler(413)
 def file_too_large(_error):
     flash(
