@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Quiz Results</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+        body {
+            background: #f4f7fc;
+        }
+
+        .results-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 45px 24px;
+        }
+
+        .score-card {
+            padding: 38px;
+            border-radius: 21px;
+            background: linear-gradient(
+                135deg,
+                #182b66,
+                #315efb
+            );
+            color: white;
+            text-align: center;
+        }
+
+        .score {
+            margin: 10px 0;
+            font-size: 68px;
+            font-weight: 900;
+        }
+
+        .level {
+            display: inline-block;
+            padding: 9px 16px;
+            border-radius: 30px;
+            background: white;
+            color: #2343ae;
+            font-weight: 800;
+        }
+
+        .result-card {
+            margin-top: 20px;
+            padding: 23px;
+            border: 1px solid #dce4f0;
+            border-radius: 15px;
+            background: white;
+        }
+
+        .correct {
+            border-left: 5px solid #35a66f;
+        }
+
+        .incorrect {
+            border-left: 5px solid #dc5555;
+        }
+
+        .status {
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .correct .status {
+            color: #24845a;
+        }
+
+        .incorrect .status {
+            color: #c43c3c;
+        }
+
+        .answer-box {
+            margin: 13px 0;
+            padding: 13px;
+            border-radius: 9px;
+            background: #f5f7fb;
+        }
+
+        .explanation {
+            padding: 14px;
+            border-radius: 9px;
+            background: #edf3ff;
+            line-height: 1.6;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .action-button {
+            display: inline-block;
+            padding: 13px 20px;
+            border-radius: 9px;
+            background: #315efb;
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a
+        class="brand"
+        href="{{ url_for('index') }}"
+    >
+        <span class="brand-icon">S</span>
+
+        <span>
+            Socratic Learning Assistant
+        </span>
+    </a>
+
+</header>
+
+<main class="results-container">
+
+    <section class="score-card">
+
+        <p class="eyebrow">
+            Quiz Complete
+        </p>
+
+        <h1>
+            {{ concept["concept"] }}
+        </h1>
+
+        <div class="score">
+            {{ result["percentage"] }}%
+        </div>
+
+        <p>
+            {{ result["correct"] }}
+            of
+            {{ result["total"] }}
+            correct
+        </p>
+
+        <span class="level">
+            {{ result["level"] }}
+        </span>
+
+    </section>
+
+    {% for item in result["results"] %}
+
+        <article
+            class="
+                result-card
+                {% if item["is_correct"] %}
+                    correct
+                {% else %}
+                    incorrect
+                {% endif %}
+            "
+        >
+
+            <div class="status">
+
+                {% if item["is_correct"] %}
+                    ✓ Correct
+                {% else %}
+                    ✗ Incorrect
+                {% endif %}
+
+            </div>
+
+            <h2>
+                {{ loop.index }}.
+                {{ item["question"] }}
+            </h2>
+
+            <div class="answer-box">
+                <strong>Your answer:</strong><br>
+                {{ item["selected_text"] }}
+            </div>
+
+            {% if not item["is_correct"] %}
+
+                <div class="answer-box">
+                    <strong>Correct answer:</strong><br>
+                    {{ item["correct_text"] }}
+                </div>
+
+            {% endif %}
+
+            <div class="explanation">
+
+                <strong>Explanation</strong>
+
+                <br>
+
+                {{ item["explanation"] }}
+
+            </div>
+
+        </article>
+
+    {% endfor %}
+
+    <div class="actions">
+
+        <a
+            class="action-button"
+            href="{{ url_for(
+                'concept_page',
+                session_filename=session_filename,
+                concept_index=concept_index
+            ) }}"
+        >
+            Back to Concept
+        </a>
+
+    </div>
+
+</main>
+
+</body>
+</html>
