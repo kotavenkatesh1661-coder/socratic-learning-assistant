@@ -372,7 +372,10 @@ def generate_concept_questions():
     ).strip()
 
     if not session_filename or concept_index == "":
-        flash("Concept information is missing.", "error")
+        flash(
+            "Concept information is missing.",
+            "error",
+        )
         return redirect(url_for("index"))
 
     try:
@@ -405,23 +408,70 @@ def generate_concept_questions():
             [],
         )
 
-        if concept_index < 0 or concept_index >= len(concepts):
-            flash("Concept not found.", "error")
+        if (
+            concept_index < 0
+            or concept_index >= len(concepts)
+        ):
+            flash(
+                "Concept not found.",
+                "error",
+            )
             return redirect(url_for("index"))
 
         selected_concept = concepts[
             concept_index
         ]
 
-        learning_journey = generate_socratic_questions(
-            material,
-            [selected_concept],
+        # Generate questions ONLY for selected concept
+        learning_journey = (
+            generate_socratic_questions(
+                material,
+                [selected_concept],
+            )
+        )
+
+        if not learning_journey:
+            flash(
+                "No Socratic questions could be generated.",
+                "error",
+            )
+            return redirect(
+                url_for(
+                    "concept_page",
+                    session_filename=session_filename,
+                    concept_index=concept_index,
+                )
+            )
+
+        # VERY IMPORTANT:
+        # Save the generated questions for scoring later.
+        session_data["active_learning_journey"] = (
+            learning_journey
+        )
+
+        session_data["active_concept_index"] = (
+            concept_index
+        )
+
+        session_data["active_concept"] = (
+            selected_concept
+        )
+
+        session_path.write_text(
+            json.dumps(
+                session_data,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
         )
 
         return render_template(
             "questions.html",
             learning_journey=learning_journey,
             session_filename=session_filename,
+            concept=selected_concept,
+            concept_index=concept_index,
         )
 
     except Exception as error:
@@ -430,12 +480,11 @@ def generate_concept_questions():
         )
 
         flash(
-            f"Something went wrong: {error}",
+            f"Something went wrong while generating questions: {error}",
             "error",
         )
 
         return redirect(url_for("index"))
-
 
 @app.route("/evaluate-answers", methods=["POST"])
 def evaluate_answers():
@@ -468,9 +517,10 @@ def evaluate_answers():
         )
 
         learning_journey = session_data.get(
-            "learning_journey",
+            "active_learning_journey",
             [],
         )
+        
 
         if not learning_journey:
             flash(
