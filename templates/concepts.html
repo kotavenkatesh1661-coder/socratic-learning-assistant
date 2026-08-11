@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Learning Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+        body {
+            background: #f4f7fc;
+        }
+
+        .dashboard-container {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 50px 24px;
+        }
+
+        .dashboard-header {
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            margin: 8px 0 10px;
+            font-size: 38px;
+        }
+
+        .dashboard-header p {
+            max-width: 750px;
+            color: #667085;
+            line-height: 1.6;
+        }
+
+        .summary-card {
+            margin-bottom: 30px;
+            padding: 28px;
+            border-radius: 18px;
+            background: linear-gradient(
+                135deg,
+                #182b66,
+                #315efb
+            );
+            color: white;
+        }
+
+        .summary-card h2 {
+            margin: 0 0 10px;
+        }
+
+        .summary-number {
+            font-size: 46px;
+            font-weight: 800;
+        }
+
+        .summary-card p {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(280px, 1fr)
+            );
+            gap: 20px;
+        }
+
+        .concept-card {
+            display: block;
+            padding: 22px;
+            border: 1px solid #dfe5ef;
+            border-radius: 16px;
+            background: white;
+            color: inherit;
+            text-decoration: none;
+            box-shadow:
+                0 10px 30px rgba(25, 45, 80, 0.07);
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .concept-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 16px 35px rgba(25, 45, 80, 0.12);
+        }
+
+        .concept-number {
+            display: inline-flex;
+            width: 38px;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            border-radius: 50%;
+            background: #e9efff;
+            color: #315efb;
+            font-weight: 800;
+        }
+
+        .concept-card h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+        }
+
+        .concept-card p {
+            margin: 0 0 18px;
+            color: #5d6880;
+            line-height: 1.6;
+        }
+
+        .concept-action {
+            color: #315efb;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 30px;
+            border-radius: 16px;
+            background: white;
+            text-align: center;
+            color: #667085;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a
+        class="brand"
+        href="{{ url_for('index') }}"
+    >
+        <span class="brand-icon">S</span>
+
+        <span>
+            Socratic Learning Assistant
+        </span>
+    </a>
+
+    <nav>
+        <a href="{{ url_for('index') }}">
+            New Material
+        </a>
+    </nav>
+
+</header>
+
+<main class="dashboard-container">
+
+    <section class="dashboard-header">
+
+        <p class="eyebrow">
+            Learning Dashboard
+        </p>
+
+        <h1>
+            Choose a Concept to Learn
+        </h1>
+
+        <p>
+            Select any concept below to study it individually.
+            Each concept will have its own Socratic learning mode
+            and multiple-choice practice.
+        </p>
+
+    </section>
+
+    <section class="summary-card">
+
+        <h2>
+            Concepts Identified
+        </h2>
+
+        <div class="summary-number">
+            {{ concepts | length }}
+        </div>
+
+        <p>
+            Choose a concept and begin learning at your own pace.
+        </p>
+
+    </section>
+
+    {% if concepts %}
+
+        <section class="concept-grid">
+
+            {% for concept in concepts %}
+
+                <a
+                    class="concept-card"
+                    href="{{ url_for(
+                        'concept_page',
+                        session_filename=session_filename,
+                        concept_index=loop.index0
+                    ) }}"
+                >
+
+                    <span class="concept-number">
+                        {{ loop.index }}
+                    </span>
+
+                    <h2>
+                        {{ concept["concept"] }}
+                    </h2>
+
+                    <p>
+                        {{ concept["description"] }}
+                    </p>
+
+                    <span class="concept-action">
+                        Open Concept →
+                    </span>
+
+                </a>
+
+            {% endfor %}
+
+        </section>
+
+    {% else %}
+
+        <section class="empty-state">
+            No concepts were identified.
+        </section>
+
+    {% endif %}
+
+</main>
+
+<footer>
+    <p>
+        Socratic Learning Assistant
+    </p>
+</footer>
+
+</body>
+</html>
