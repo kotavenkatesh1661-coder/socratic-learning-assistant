@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from services.ai_service import (
     evaluate_socratic_answers,
     extract_concepts,
+    generate_mcq_questions,
     generate_socratic_questions,
 )
 from services.parser_service import (
