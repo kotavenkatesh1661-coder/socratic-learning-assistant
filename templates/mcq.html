@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Multiple Choice Quiz</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+
+    <style>
+        body {
+            background: #f4f7fc;
+        }
+
+        .quiz-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 45px 24px;
+        }
+
+        .quiz-header {
+            margin-bottom: 28px;
+            padding: 30px;
+            border-radius: 20px;
+            background: linear-gradient(
+                135deg,
+                #182b66,
+                #315efb
+            );
+            color: white;
+        }
+
+        .quiz-header h1 {
+            margin: 8px 0;
+        }
+
+        .quiz-header p {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+
+        .progress-box {
+            position: sticky;
+            top: 10px;
+            z-index: 20;
+            margin-bottom: 22px;
+            padding: 16px 20px;
+            border: 1px solid #dce4f0;
+            border-radius: 14px;
+            background: white;
+            box-shadow:
+                0 8px 24px rgba(30, 50, 90, 0.08);
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 9px;
+            font-weight: 700;
+        }
+
+        .progress-track {
+            height: 9px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #e4e8f0;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            background: #315efb;
+            transition: width 0.25s ease;
+        }
+
+        .question-card {
+            margin-bottom: 22px;
+            padding: 25px;
+            border: 1px solid #dce4f0;
+            border-radius: 17px;
+            background: white;
+            box-shadow:
+                0 8px 28px rgba(25, 45, 80, 0.06);
+        }
+
+        .question-number {
+            color: #315efb;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .question-card h2 {
+            margin: 10px 0 18px;
+            font-size: 20px;
+            line-height: 1.55;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 11px;
+            padding: 15px;
+            border: 1px solid #dce4f0;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option:hover {
+            border-color: #315efb;
+            background: #f5f7ff;
+        }
+
+        .option:has(input:checked) {
+            border-color: #315efb;
+            background: #edf1ff;
+        }
+
+        .option input {
+            margin-top: 3px;
+        }
+
+        .hint-button {
+            margin-top: 10px;
+            padding: 8px 13px;
+            border: none;
+            border-radius: 8px;
+            background: #eef2ff;
+            color: #315efb;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .hint {
+            display: none;
+            margin-top: 12px;
+            padding: 13px;
+            border-radius: 9px;
+            background: #fff8e8;
+            line-height: 1.5;
+        }
+
+        .submit-panel {
+            padding: 28px;
+            border-radius: 17px;
+            background: white;
+            text-align: center;
+        }
+
+        .submit-button {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            background: #315efb;
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <a
+        class="brand"
+        href="{{ url_for('index') }}"
+    >
+        <span class="brand-icon">S</span>
+
+        <span>
+            Socratic Learning Assistant
+        </span>
+    </a>
+
+</header>
+
+<main class="quiz-container">
+
+    <section class="quiz-header">
+
+        <p class="eyebrow">
+            Multiple Choice
+        </p>
+
+        <h1>
+            {{ concept["concept"] }}
+        </h1>
+
+        <p>
+            Test your understanding of this concept.
+        </p>
+
+    </section>
+
+    <section class="progress-box">
+
+        <div class="progress-text">
+
+            <span>
+                Quiz Progress
+            </span>
+
+            <span id="progress-text">
+                0 / {{ questions|length }}
+            </span>
+
+        </div>
+
+        <div class="progress-track">
+
+            <div
+                id="progress-fill"
+                class="progress-fill"
+            ></div>
+
+        </div>
+
+    </section>
+
+    <form
+        method="POST"
+        action="{{ url_for('evaluate_mcq') }}"
+        id="mcq-form"
+    >
+
+        <input
+            type="hidden"
+            name="session_filename"
+            value="{{ session_filename }}"
+        >
+
+        {% for question in questions %}
+
+            {% set question_loop = loop %}
+
+            <article class="question-card">
+
+                <span class="question-number">
+                    Question {{ question_loop.index }}
+                </span>
+
+                <h2>
+                    {{ question["question"] }}
+                </h2>
+
+                {% for option in question["options"] %}
+
+                    <label class="option">
+
+                        <input
+                            type="radio"
+                            name="answer_{{ question_loop.index0 }}"
+                            value="{{ loop.index0 }}"
+                            onchange="updateProgress()"
+                        >
+
+                        <span>
+                            {{ option }}
+                        </span>
+
+                    </label>
+
+                {% endfor %}
+
+                <button
+                    class="hint-button"
+                    type="button"
+                    onclick="toggleHint(
+                        'hint-{{ question_loop.index0 }}'
+                    )"
+                >
+                    Need a Hint?
+                </button>
+
+                <div
+                    class="hint"
+                    id="hint-{{ question_loop.index0 }}"
+                >
+                    {{ question["hint"] }}
+                </div>
+
+            </article>
+
+        {% endfor %}
+
+        <section class="submit-panel">
+
+            <h2>
+                Finished?
+            </h2>
+
+            <p>
+                Submit your answers to see your score
+                and explanations.
+            </p>
+
+            <button
+                class="submit-button"
+                type="submit"
+            >
+                Submit Quiz
+            </button>
+
+        </section>
+
+    </form>
+
+</main>
+
+<script>
+    function toggleHint(id) {
+        const element =
+            document.getElementById(id);
+
+        element.style.display =
+            element.style.display === "block"
+                ? "none"
+                : "block";
+    }
+
+    function updateProgress() {
+        const questions =
+            {{ questions|length }};
+
+        let answered = 0;
+
+        for (
+            let index = 0;
+            index < questions;
+            index++
+        ) {
+            const selected =
+                document.querySelector(
+                    'input[name="answer_' +
+                    index +
+                    '"]:checked'
+                );
+
+            if (selected) {
+                answered++;
+            }
+        }
+
+        const percentage =
+            questions > 0
+                ? (answered / questions) * 100
+                : 0;
+
+        document.getElementById(
+            "progress-text"
+        ).textContent =
+            answered + " / " + questions;
+
+        document.getElementById(
+            "progress-fill"
+        ).style.width =
+            percentage + "%";
+    }
+</script>
+
+</body>
+</html>
