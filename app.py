@@ -415,6 +415,117 @@ def generate_concept_questions():
 
         return redirect(url_for("index"))
 
+@app.route("/generate-mcq", methods=["POST"])
+def generate_mcq():
+    session_filename = request.form.get(
+        "session_filename",
+        "",
+    ).strip()
+
+    concept_index_raw = request.form.get(
+        "concept_index",
+        "",
+    ).strip()
+
+    if not session_filename or concept_index_raw == "":
+        flash(
+            "Concept information is missing.",
+            "error",
+        )
+        return redirect(url_for("index"))
+
+    try:
+        concept_index = int(concept_index_raw)
+
+        session_path = safe_session_path(
+            session_filename
+        )
+
+        if not session_path.exists():
+            flash(
+                "The learning session has expired.",
+                "error",
+            )
+            return redirect(url_for("index"))
+
+        session_data = json.loads(
+            session_path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        material = session_data.get(
+            "material",
+            "",
+        )
+
+        concepts = session_data.get(
+            "concepts",
+            [],
+        )
+
+        if (
+            concept_index < 0
+            or concept_index >= len(concepts)
+        ):
+            flash(
+                "Concept not found.",
+                "error",
+            )
+            return redirect(url_for("index"))
+
+        selected_concept = concepts[
+            concept_index
+        ]
+
+        mcq_questions = generate_mcq_questions(
+            material,
+            selected_concept,
+            question_count=5,
+        )
+
+        session_data["active_mcq"] = (
+            mcq_questions
+        )
+
+        session_data["active_concept_index"] = (
+            concept_index
+        )
+
+        session_data["active_concept"] = (
+            selected_concept
+        )
+
+        session_path.write_text(
+            json.dumps(
+                session_data,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        return render_template(
+            "mcq.html",
+            questions=mcq_questions,
+            concept=selected_concept,
+            concept_index=concept_index,
+            session_filename=session_filename,
+        )
+
+    except Exception as error:
+        app.logger.exception(
+            "MCQ generation failed"
+        )
+
+        flash(
+            f"Something went wrong while generating the quiz: {error}",
+            "error",
+        )
+
+        return redirect(url_for("index"))
+
+
 @app.route("/evaluate-answers", methods=["POST"])
 def evaluate_answers():
     session_filename = request.form.get(
