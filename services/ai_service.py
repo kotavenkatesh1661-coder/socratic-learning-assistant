@@ -89,6 +89,112 @@ def call_gemini(prompt, schema):
         "Please try again shortly."
     ) from last_error
 
+def generate_mcq_questions(material, concept, question_count=5):
+    """
+    Generate multiple-choice questions for one selected concept.
+    """
+
+    if not material or not material.strip():
+        raise ValueError("Learning material cannot be empty.")
+
+    if not concept:
+        raise ValueError("Concept is missing.")
+
+    concept_name = concept.get("concept", "").strip()
+    concept_description = concept.get("description", "").strip()
+
+    if not concept_name:
+        raise ValueError("Concept name is missing.")
+
+    prompt = f"""
+You are an educational quiz designer.
+
+Create exactly {question_count} multiple-choice questions for the
+single learning concept below.
+
+Concept:
+{concept_name}
+
+Description:
+{concept_description}
+
+Original learning material:
+{material}
+
+Requirements:
+
+- Create exactly {question_count} questions.
+- Every question must focus on the selected concept.
+- Each question must have exactly four answer choices.
+- Exactly one answer must be correct.
+- correct_answer must be the zero-based index:
+  0 = first option
+  1 = second option
+  2 = third option
+  3 = fourth option
+- Include a clear explanation of why the answer is correct.
+- Include a short hint.
+- Mix question styles:
+  definition,
+  understanding,
+  application,
+  scenario,
+  reasoning.
+- Do not make the correct option obvious.
+- Make questions appropriate for a university student.
+"""
+
+    schema = {
+        "type": "array",
+        "minItems": question_count,
+        "maxItems": question_count,
+        "items": {
+            "type": "object",
+            "properties": {
+                "question": {
+                    "type": "string",
+                },
+                "options": {
+                    "type": "array",
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "items": {
+                        "type": "string",
+                    },
+                },
+                "correct_answer": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 3,
+                },
+                "explanation": {
+                    "type": "string",
+                },
+                "hint": {
+                    "type": "string",
+                },
+            },
+            "required": [
+                "question",
+                "options",
+                "correct_answer",
+                "explanation",
+                "hint",
+            ],
+        },
+    }
+
+    questions = call_gemini(
+        prompt,
+        schema,
+    )
+
+    if not questions:
+        raise ValueError(
+            "No multiple-choice questions were generated."
+        )
+
+    return questions
 
 def extract_concepts(text):
     """
