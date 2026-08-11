@@ -525,6 +525,189 @@ def generate_mcq():
 
         return redirect(url_for("index"))
 
+@app.route("/evaluate-mcq", methods=["POST"])
+def evaluate_mcq():
+    session_filename = request.form.get(
+        "session_filename",
+        "",
+    ).strip()
+
+    if not session_filename:
+        flash(
+            "The learning session could not be found.",
+            "error",
+        )
+        return redirect(url_for("index"))
+
+    try:
+        session_path = safe_session_path(
+            session_filename
+        )
+
+        if not session_path.exists():
+            flash(
+                "The learning session has expired.",
+                "error",
+            )
+            return redirect(url_for("index"))
+
+        session_data = json.loads(
+            session_path.read_text(
+                encoding="utf-8"
+            )
+        )
+
+        questions = session_data.get(
+            "active_mcq",
+            [],
+        )
+
+        concept = session_data.get(
+            "active_concept",
+            {},
+        )
+
+        concept_index = session_data.get(
+            "active_concept_index",
+            0,
+        )
+
+        if not questions:
+            flash(
+                "No multiple-choice questions were found.",
+                "error",
+            )
+            return redirect(url_for("index"))
+
+        results = []
+        correct_count = 0
+
+        for index, question in enumerate(
+            questions
+        ):
+            submitted = request.form.get(
+                f"answer_{index}",
+                "",
+            )
+
+            try:
+                selected_answer = int(submitted)
+            except (TypeError, ValueError):
+                selected_answer = -1
+
+            correct_answer = question.get(
+                "correct_answer",
+                -1,
+            )
+
+            is_correct = (
+                selected_answer
+                == correct_answer
+            )
+
+            if is_correct:
+                correct_count += 1
+
+            options = question.get(
+                "options",
+                [],
+            )
+
+            selected_text = (
+                options[selected_answer]
+                if 0 <= selected_answer < len(options)
+                else "No answer selected"
+            )
+
+            correct_text = (
+                options[correct_answer]
+                if 0 <= correct_answer < len(options)
+                else ""
+            )
+
+            results.append(
+                {
+                    "question": question.get(
+                        "question",
+                        "",
+                    ),
+                    "selected_answer": selected_answer,
+                    "selected_text": selected_text,
+                    "correct_answer": correct_answer,
+                    "correct_text": correct_text,
+                    "is_correct": is_correct,
+                    "explanation": question.get(
+                        "explanation",
+                        "",
+                    ),
+                }
+            )
+
+        total_questions = len(questions)
+
+        percentage = (
+            round(
+                (
+                    correct_count
+                    / total_questions
+                )
+                * 100
+            )
+            if total_questions
+            else 0
+        )
+
+        if percentage >= 90:
+            level = "Excellent"
+        elif percentage >= 75:
+            level = "Strong"
+        elif percentage >= 60:
+            level = "Developing"
+        elif percentage >= 40:
+            level = "Basic"
+        else:
+            level = "Needs Practice"
+
+        mcq_result = {
+            "correct": correct_count,
+            "total": total_questions,
+            "percentage": percentage,
+            "level": level,
+            "results": results,
+        }
+
+        session_data["mcq_result"] = (
+            mcq_result
+        )
+
+        session_path.write_text(
+            json.dumps(
+                session_data,
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        return render_template(
+            "mcq_results.html",
+            result=mcq_result,
+            concept=concept,
+            concept_index=concept_index,
+            session_filename=session_filename,
+        )
+
+    except Exception as error:
+        app.logger.exception(
+            "MCQ evaluation failed"
+        )
+
+        flash(
+            f"Something went wrong while evaluating the quiz: {error}",
+            "error",
+        )
+
+        return redirect(url_for("index"))
 
 @app.route("/evaluate-answers", methods=["POST"])
 def evaluate_answers():
