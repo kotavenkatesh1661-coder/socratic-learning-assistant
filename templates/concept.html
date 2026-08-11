@@ -197,13 +197,29 @@
                 multiple-choice questions and explanations.
             </p>
 
-            <button
-                class="mode-button disabled-button"
-                type="button"
-                disabled
-            >
-                MCQ Coming Next
-            </button>
+            <form
+    method="POST"
+    action="{{ url_for('generate_mcq') }}"
+>
+    <input
+        type="hidden"
+        name="session_filename"
+        value="{{ session_filename }}"
+    >
+
+    <input
+        type="hidden"
+        name="concept_index"
+        value="{{ concept_index }}"
+    >
+
+    <button
+        class="mode-button"
+        type="submit"
+    >
+        Start Multiple Choice Quiz
+    </button>
+</form>
 
         </article>
 
